@@ -1,0 +1,12 @@
+{
+	"editor.detectIndentation": false,
+	"editor.insertSpaces": false,
+	"editor.lineNumbers": "relative",
+	"editor.tabSize": 2,
+	"editor.useTabStops": false,
+	"editor.wordWrap": "on",
+	"files.eol": "\n",
+	"files.insertFinalNewline": true,
+	"files.trimFinalNewlines": true,
+	"files.trimTrailingWhitespace": true
+}
