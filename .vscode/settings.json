@@ -8,5 +8,8 @@
 	"files.eol": "\n",
 	"files.insertFinalNewline": true,
 	"files.trimFinalNewlines": true,
-	"files.trimTrailingWhitespace": true
+	"files.trimTrailingWhitespace": true,
+	"idf.customExtraVars": {
+		"IDF_TARGET": "esp32c6"
+	}
 }
