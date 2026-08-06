@@ -1,3 +1,4 @@
 dependencies:
   espressif/idf_swift:
-    version: "*"
+    version: '*'
+  esp-idf-lib/dht: '*'

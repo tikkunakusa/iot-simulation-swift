@@ -7,5 +7,6 @@
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
+#include <dht.h>
 
 #endif

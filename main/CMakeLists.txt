@@ -7,5 +7,5 @@ idf_component_register(
 idf_component_register_swift(
 	${COMPONENT_LIB}
 	BRIDGING_HEADER "${CMAKE_CURRENT_LIST_DIR}/BridgingHeader.h"
-	SRCS "main.swift"
+	SRCS "main.swift" "sensor/dht22.swift"
 )
