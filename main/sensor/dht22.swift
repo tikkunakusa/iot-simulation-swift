@@ -26,8 +26,6 @@ public struct DHT22 {
 		if status == 0 {
 			return (humidity, temperature)
 		} else {
-			// Anda dapat menambahkan error handling yang lebih spesifik jika diperlukan
-			// (misal mencetak kode error dari status)
 			return nil
 		}
 	}

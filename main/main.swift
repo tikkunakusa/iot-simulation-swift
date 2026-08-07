@@ -6,7 +6,14 @@ func main() {
 
 	while true {
 		if let data = dhtSensor.read() {
-			print("humidity: \(Int(data.humidity)), temperature: \(Int(data.temperature))")
+			let hInt = Int(data.humidity)
+			// Ekstrak 1 digit desimal dengan mengalikan selisihnya dengan 10
+			let hFrac = abs(Int((data.humidity - Float(hInt)) * 10))
+			
+			let tInt = Int(data.temperature)
+			let tFrac = abs(Int((data.temperature - Float(tInt)) * 10))
+			
+			print("humidity: \(hInt).\(hFrac), temperature: \(tInt).\(tFrac)")
 		} else {
 			print("Failed to read DHT22")
 		}
