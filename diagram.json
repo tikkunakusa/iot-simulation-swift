@@ -18,6 +18,13 @@
 			"top": -134.1,
 			"left": -235.8,
 			"attrs": {}
+		},
+		{
+			"type": "wokwi-neo6m-gps",
+			"id": "gps1",
+			"top": 0,
+			"left": 200,
+			"attrs": {}
 		}
 	],
 	"connections": [
@@ -57,6 +64,30 @@
 			[
 				"v0"
 			]
+		],
+		[
+			"gps1:TX",
+			"esp:16",
+			"blue",
+			[]
+		],
+		[
+			"gps1:RX",
+			"esp:17",
+			"purple",
+			[]
+		],
+		[
+			"gps1:VCC",
+			"esp:3V3",
+			"red",
+			[]
+		],
+		[
+			"gps1:GND",
+			"esp:GND.1",
+			"black",
+			[]
 		]
 	],
 	"dependencies": {}
