@@ -2,3 +2,5 @@ dependencies:
   espressif/idf_swift:
     version: '*'
   esp-idf-lib/dht: '*'
+  espp/led: ^1.1.7
+  espressif/mqtt: "*"

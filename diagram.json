@@ -18,6 +18,20 @@
 			"top": -134.1,
 			"left": -235.8,
 			"attrs": {}
+		},
+		{
+			"type": "wokwi-traffic-light",
+			"id": "tl1",
+			"top": 0,
+			"left": 200,
+			"attrs": {}
+		},
+		{
+			"type": "wokwi-potentiometer",
+			"id": "mq135",
+			"top": 100,
+			"left": -235,
+			"attrs": {}
 		}
 	],
 	"connections": [
@@ -57,6 +71,48 @@
 			[
 				"v0"
 			]
+		],
+		[
+			"tl1:GND",
+			"esp:GND.1",
+			"black",
+			[]
+		],
+		[
+			"tl1:R",
+			"esp:7",
+			"red",
+			[]
+		],
+		[
+			"tl1:Y",
+			"esp:6",
+			"yellow",
+			[]
+		],
+		[
+			"tl1:G",
+			"esp:15",
+			"green",
+			[]
+		],
+		[
+			"mq135:GND",
+			"esp:GND.1",
+			"black",
+			[]
+		],
+		[
+			"mq135:VCC",
+			"esp:3V3",
+			"red",
+			[]
+		],
+		[
+			"mq135:SIG",
+			"esp:3",
+			"green",
+			[]
 		]
 	],
 	"dependencies": {}
