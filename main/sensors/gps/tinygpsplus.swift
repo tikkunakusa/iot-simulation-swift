@@ -8,10 +8,10 @@ public class GPS {
     
     /// Initialize GPS module on specified UART pins and baud rate
     /// - Parameters:
-    ///   - rxPin: ESP32 RX pin connected to GPS TX (Default: GPIO 5)
-    ///   - txPin: ESP32 TX pin connected to GPS RX (Default: GPIO 6)
+    ///   - rxPin: ESP32 RX pin connected to GPS TX (Default: GPIO 16)
+    ///   - txPin: ESP32 TX pin connected to GPS RX (Default: GPIO 17)
     ///   - baudRate: Serial baud rate for Neo-6M (Default: 9600 bps)
-    public init(rxPin: Int32 = 5, txPin: Int32 = 6, baudRate: Int32 = 9600) {
+    public init(rxPin: Int32 = 16, txPin: Int32 = 17, baudRate: Int32 = 9600) {
         self.handle = gps_init()
         gps_uart_init(txPin, rxPin, baudRate)
     }

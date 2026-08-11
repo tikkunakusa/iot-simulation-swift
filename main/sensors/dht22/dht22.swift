@@ -7,9 +7,11 @@ public struct DHT22 {
 	public let pin: Int32  // gpio_num_t umumnya di-bridge sebagai Int32 di Swift
 
 	/// Inisialisasi koneksi DHT22
-	/// - Parameter pin: Nomor pin GPIO ESP32-C6
-	public init(pin: Int32) {
+	/// - Parameter pin: Nomor pin GPIO ESP32 (default: 4)
+	public init(pin: Int32 = 4) {
 		self.pin = pin
+        // Memaksa pengaktifan resistor pull-up internal ESP32
+        gpio_set_pull_mode(gpio_num_t(pin), GPIO_PULLUP_ONLY)
 	}
 
 	/// Membaca data kelembaban dan suhu dari sensor
@@ -27,6 +29,15 @@ public struct DHT22 {
 			return (humidity, temperature)
 		} else {
 			return nil
+		}
+	}
+
+	/// Membaca dan mencetak informasi kelembaban (humidity) dan suhu (temperature) ke console dengan presisi 1 desimal
+	public func printData() {
+		if let data = read() {
+			print_dht_data(data.humidity, data.temperature)
+		} else {
+			print("DHT22 -> Gagal membaca data dari sensor (Timeout/Checksum Error)")
 		}
 	}
 }

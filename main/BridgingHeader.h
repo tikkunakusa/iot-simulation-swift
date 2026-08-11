@@ -8,6 +8,7 @@
 #include "driver/gpio.h"
 #include "sdkconfig.h"
 #include <dht.h>
-#include "sensor/gps_wrapper.h"
+#include "sensors/gps/gps_wrapper.h"
+#include "sensors/modem_4g/modem_wrapper.h"
 
 #endif

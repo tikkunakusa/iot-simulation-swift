@@ -110,4 +110,8 @@ void print_gps_status(gps_handle_t handle) {
     }
 }
 
+void print_dht_data(float humidity, float temperature) {
+    printf("DHT22 -> Humidity: %.1f%%, Temperature: %.1f°C\n", humidity, temperature);
+}
+
 }

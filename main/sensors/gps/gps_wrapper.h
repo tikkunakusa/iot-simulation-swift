@@ -29,6 +29,7 @@ uint32_t gps_satellites_value(gps_handle_t handle);
 void gps_uart_init(int tx_pin, int rx_pin, int baud_rate);
 void print_gps_location(double lat, double lng);
 void print_gps_status(gps_handle_t handle);
+void print_dht_data(float humidity, float temperature);
 
 #ifdef __cplusplus
 }
