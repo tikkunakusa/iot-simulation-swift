@@ -16,6 +16,12 @@ func main() {
     // Terhubung ke GPIO 21, 22, 23 (pin yang umumnya tersedia di FireBeetle 2 ESP32-C6)
     let modem = Modem4G(rxPin: 21, txPin: 22, pwrPin: 23)
 
+    print("Menunggu modem mendapatkan sinyal (15 detik)...")
+    vTaskDelay(1500) // 15 detik (1500 ticks pada 100Hz)
+    
+    SNTP.initialize()
+    MQTT.start(brokerUri: "tcp://broker.hivemq.com:1883") // Ganti dengan broker Anda jika berbeda
+
     var counter = 0
     var tickCount = 0
     
