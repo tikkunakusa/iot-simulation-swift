@@ -9,7 +9,7 @@
 #include <sys/time.h>
 #include "esp_timer.h"
 
-#define MODEM_UART_PORT UART_NUM_0
+#define MODEM_UART_PORT UART_NUM_1
 #define BUF_SIZE 1024
 
 static const char *TAG = "MODEM_A7670C";
@@ -29,9 +29,11 @@ void modem_power_cycle(int pwr_pin) {
         gpio_set_level((gpio_num_t)pwr_pin, 1);
         vTaskDelay(pdMS_TO_TICKS(100));
         
+        // Pulsa Active-LOW (0) selama 1.2 detik untuk menyalakan modem
         gpio_set_level((gpio_num_t)pwr_pin, 0); 
         vTaskDelay(pdMS_TO_TICKS(1200));       
         
+        // Kembalikan ke HIGH (1) setelah menyala
         gpio_set_level((gpio_num_t)pwr_pin, 1); 
         
         ESP_LOGI(TAG, "Waiting 3 seconds for modem to boot...");
@@ -54,15 +56,34 @@ void modem_init(int rx_pin, int tx_pin, int pwr_pin, int baud_rate) {
     
     ESP_LOGI(TAG, "Modem UART initialized on TX: %d, RX: %d", tx_pin, rx_pin);
 
-    modem_power_cycle(pwr_pin);
+    // Cek apakah modem sudah menyala (kirim tes AT)
+    uint8_t dummy[128];
+    uart_write_bytes(MODEM_UART_PORT, "AT\r\n", 4);
+    int len = uart_read_bytes(MODEM_UART_PORT, dummy, sizeof(dummy) - 1, pdMS_TO_TICKS(500));
+    if (len > 0 && strstr((char*)dummy, "OK")) {
+        ESP_LOGI(TAG, "Modem sudah DALAM KONDISI NYALA. Melewati PWRKEY toggle.");
+    } else {
+        modem_power_cycle(pwr_pin);
+    }
+    
+    // Kunci Autobauding SIMCom A7670C ke 115200 Hz
+    for (int i = 0; i < 5; i++) {
+        uart_write_bytes(MODEM_UART_PORT, "AT\r\n", 4);
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+    uart_flush(MODEM_UART_PORT);
+    uart_write_bytes(MODEM_UART_PORT, "AT+IPR=115200\r\n", 15);
+    vTaskDelay(pdMS_TO_TICKS(200));
+    uart_flush(MODEM_UART_PORT);
 }
 
 void modem_send_command(const char* cmd) {
     uart_write_bytes(MODEM_UART_PORT, cmd, strlen(cmd));
+    uart_wait_tx_done(MODEM_UART_PORT, pdMS_TO_TICKS(500));
 }
 
 int modem_read_data(uint8_t* buffer, int buffer_size) {
-    int len = uart_read_bytes(MODEM_UART_PORT, buffer, buffer_size - 1, pdMS_TO_TICKS(20));
+    int len = uart_read_bytes(MODEM_UART_PORT, buffer, buffer_size - 1, pdMS_TO_TICKS(200));
     if (len > 0) {
         buffer[len] = '\0'; 
     }
@@ -121,6 +142,9 @@ extern "C" void parse_modem_time_if_present(const char* str) {
 
 // Embedded Swift Unicode Stubs to satisfy linker when standard library tables are omitted
 extern "C" {
+    void delay_ms(uint32_t ms) {
+        vTaskDelay(pdMS_TO_TICKS(ms));
+    }
     bool _swift_stdlib_isInCB_Consonant(uint32_t scalar) { return false; }
     uint8_t _swift_stdlib_getGraphemeBreakProperty(uint32_t scalar) { return 0; }
     uint16_t _swift_stdlib_getNormData(uint32_t scalar) { return 0; }

@@ -9,8 +9,8 @@ Berikut adalah rekapitulasi sambungan kabel (wiring) final dari seluruh sensor d
 
 | Pin Modem | Pin ESP32-C6 | Keterangan |
 | :--- | :--- | :--- |
-| **TXD** | GPIO 21 | Jalur RX ESP32 (Menerima balasan AT dari Modem) |
-| **RXD** | GPIO 22 | Jalur TX ESP32 (Mengirim perintah AT ke Modem) |
+| **TXD** | GPIO 22 | Jalur RX ESP32 (Menerima balasan AT dari Modem) |
+| **RXD** | GPIO 21 | Jalur TX ESP32 (Mengirim perintah AT ke Modem) |
 | **PEN / PWRKEY** | GPIO 23 | Kontrol untuk me-reset / menyalakan modem dari kodingan |
 | **GND** | GND | Ground bersama (Wajib terhubung) |
 | **VTTL / VEXT** | 3V3 (3.3V) | Referensi tegangan logika UART (agar aman untuk ESP32) |

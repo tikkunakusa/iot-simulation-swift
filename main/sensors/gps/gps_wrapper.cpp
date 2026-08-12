@@ -4,7 +4,7 @@
 #include <driver/gpio.h>
 #include <esp_log.h>
 
-static const uart_port_t GPS_UART_PORT = UART_NUM_1;
+static const uart_port_t GPS_UART_PORT = UART_NUM_0;
 
 extern "C" {
 
@@ -111,7 +111,7 @@ void print_gps_status(gps_handle_t handle) {
 }
 
 void print_dht_data(float humidity, float temperature) {
-    printf("DHT22 -> Humidity: %.1f%%, Temperature: %.1f°C\n", humidity, temperature);
+    printf("[DHT22 ] 🌡️ Suhu: %.1f°C | 💧 Kelembaban: %.1f%%\n", temperature, humidity);
 }
 
 }

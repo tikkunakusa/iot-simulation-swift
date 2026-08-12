@@ -13,7 +13,7 @@ public class DataManager {
 	private let maxRecords = 3600  // 1 hour max cache (FIFO)
 
 	private let mqttTopic = "mango/shipment/telemetry"
-	private let deviceId = "889875b3-4e8d-4438-ba2f-cd0b3d8b86e8"
+	private let deviceId = "4733d00b-6658-4e8a-ad13-391940975e29"
 
 	private init() {}
 
@@ -38,8 +38,8 @@ public class DataManager {
 	}
 
 	public func processQueue() {
-		// Publish when we have at least 60 collected data points (1 minute)
-		if records.count >= 60 {
+		// Publish when we have at least 15 collected data points (15 seconds, ~2.8 KB payload)
+		if records.count >= 15 {
 			if MQTT.isConnected {
 				transmitData()
 			} else {
@@ -117,8 +117,7 @@ public class DataManager {
 
 		jsonString += "]}"
 
-		print("DataManager: Mengirim \(records.count) record ke topik '\(mqttTopic)'")
-		print("DataManager: JSON Payload -> \(jsonString)")
+		print("[QUEUE ] 🚀 Mempublikasikan \(records.count) record ke topik '\(mqttTopic)'...")
 		MQTT.publish(topic: mqttTopic, data: jsonString)
 
 		// Clear records after transmission
