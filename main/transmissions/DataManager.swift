@@ -69,20 +69,42 @@ public class DataManager {
 			logEntry += "\"timestamp\":\(record.timestamp),"
 
 			// Format Float safely
-			logEntry +=
-				"\"temperature\":" + (record.temperature.map { floatToString($0) } ?? "null") + ","
-			logEntry += "\"humidity\":" + (record.humidity.map { floatToString($0) } ?? "null") + ","
+			logEntry += "\"temperature\":"
+			if let temp = record.temperature {
+				logEntry += floatToString(temp)
+			} else {
+				logEntry += "null"
+			}
+			logEntry += ",\"humidity\":"
+			if let hum = record.humidity {
+				logEntry += floatToString(hum)
+			} else {
+				logEntry += "null"
+			}
+			logEntry += ","
 
 			// Format latitudes array
 			logEntry += "\"latitude\":["
-			logEntry += record.latitudes.map { $0.map { doubleToString($0) } ?? "null" }.joined(
-				separator: ",")
+			for (latIdx, lat) in record.latitudes.enumerated() {
+				if latIdx > 0 { logEntry += "," }
+				if let lat = lat {
+					logEntry += doubleToString(lat)
+				} else {
+					logEntry += "null"
+				}
+			}
 			logEntry += "],"
 
 			// Format longitudes array
 			logEntry += "\"longitude\":["
-			logEntry += record.longitudes.map { $0.map { doubleToString($0) } ?? "null" }.joined(
-				separator: ",")
+			for (lonIdx, lon) in record.longitudes.enumerated() {
+				if lonIdx > 0 { logEntry += "," }
+				if let lon = lon {
+					logEntry += doubleToString(lon)
+				} else {
+					logEntry += "null"
+				}
+			}
 			logEntry += "]"
 
 			logEntry += "}"

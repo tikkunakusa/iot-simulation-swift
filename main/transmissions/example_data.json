@@ -2,7 +2,7 @@
 	"device_id": "889875b3-4e8d-4438-ba2f-cd0b3d8b86e8",
 	"log": [
 		{
-			"timestamp": 0,
+			"timestamp": 1770876326,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -19,247 +19,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.10,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.10,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.10,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.10,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.10,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.20,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
+			"timestamp": 1770876327,
 			"temperature": 24.40,
-			"humidity": 59.20,
+			"humidity": 61.00,
 			"latitude": [
 				null,
 				null,
@@ -274,7 +36,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876328,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -291,43 +53,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
-			"temperature": 24.40,
-			"humidity": 59.30,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
+			"timestamp": 1770876329,
 			"temperature": 24.50,
-			"humidity": 59.40,
+			"humidity": 60.90,
 			"latitude": [
 				null,
 				null,
@@ -342,7 +70,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876330,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -359,43 +87,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
-			"temperature": 24.40,
-			"humidity": 59.30,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
+			"timestamp": 1770876331,
 			"temperature": 24.50,
-			"humidity": 59.30,
+			"humidity": 60.90,
 			"latitude": [
 				null,
 				null,
@@ -410,7 +104,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876332,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -427,9 +121,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876333,
 			"temperature": 24.40,
-			"humidity": 59.40,
+			"humidity": 60.80,
 			"latitude": [
 				null,
 				null,
@@ -444,7 +138,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876334,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -461,9 +155,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876335,
 			"temperature": 24.50,
-			"humidity": 59.30,
+			"humidity": 60.80,
 			"latitude": [
 				null,
 				null,
@@ -478,7 +172,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876337,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -495,9 +189,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876338,
 			"temperature": 24.50,
-			"humidity": 59.20,
+			"humidity": 60.80,
 			"latitude": [
 				null,
 				null,
@@ -512,7 +206,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876339,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -529,9 +223,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876340,
 			"temperature": 24.50,
-			"humidity": 59.30,
+			"humidity": 60.70,
 			"latitude": [
 				null,
 				null,
@@ -546,7 +240,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876341,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -563,9 +257,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876342,
 			"temperature": 24.50,
-			"humidity": 59.40,
+			"humidity": 60.60,
 			"latitude": [
 				null,
 				null,
@@ -580,7 +274,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876343,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -597,9 +291,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876344,
 			"temperature": 24.40,
-			"humidity": 59.30,
+			"humidity": 60.70,
 			"latitude": [
 				null,
 				null,
@@ -614,7 +308,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876345,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -631,9 +325,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876346,
 			"temperature": 24.40,
-			"humidity": 59.30,
+			"humidity": 60.80,
 			"latitude": [
 				null,
 				null,
@@ -648,7 +342,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876347,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -665,9 +359,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876349,
 			"temperature": 24.50,
-			"humidity": 59.30,
+			"humidity": 60.80,
 			"latitude": [
 				null,
 				null,
@@ -682,7 +376,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876350,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -699,9 +393,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876351,
 			"temperature": 24.40,
-			"humidity": 59.30,
+			"humidity": 61.00,
 			"latitude": [
 				null,
 				null,
@@ -716,7 +410,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876352,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -733,43 +427,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.20,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
+			"timestamp": 1770876353,
 			"temperature": 24.40,
-			"humidity": 59.20,
+			"humidity": 60.80,
 			"latitude": [
 				null,
 				null,
@@ -784,7 +444,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876354,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -801,43 +461,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.20,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
-			"temperature": null,
-			"humidity": null,
-			"latitude": [
-				null,
-				null,
-				null,
-				null
-			],
-			"longitude": [
-				null,
-				null,
-				null,
-				null
-			]
-		},
-		{
-			"timestamp": 0,
+			"timestamp": 1770876355,
 			"temperature": 24.40,
-			"humidity": 59.30,
+			"humidity": 60.60,
 			"latitude": [
 				null,
 				null,
@@ -852,7 +478,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876356,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -869,9 +495,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876357,
 			"temperature": 24.40,
-			"humidity": 59.20,
+			"humidity": 60.40,
 			"latitude": [
 				null,
 				null,
@@ -886,7 +512,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876358,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -903,9 +529,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876359,
 			"temperature": 24.40,
-			"humidity": 59.30,
+			"humidity": 60.30,
 			"latitude": [
 				null,
 				null,
@@ -920,7 +546,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876360,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -937,9 +563,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876362,
 			"temperature": 24.40,
-			"humidity": 59.30,
+			"humidity": 60.30,
 			"latitude": [
 				null,
 				null,
@@ -954,7 +580,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876363,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -971,9 +597,9 @@
 			]
 		},
 		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.40,
+			"timestamp": 1770876364,
+			"temperature": 24.40,
+			"humidity": 60.40,
 			"latitude": [
 				null,
 				null,
@@ -988,7 +614,7 @@
 			]
 		},
 		{
-			"timestamp": 0,
+			"timestamp": 1770876365,
 			"temperature": null,
 			"humidity": null,
 			"latitude": [
@@ -1005,9 +631,383 @@
 			]
 		},
 		{
-			"timestamp": 0,
-			"temperature": 24.50,
-			"humidity": 59.40,
+			"timestamp": 1770876366,
+			"temperature": 24.40,
+			"humidity": 60.40,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876367,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876368,
+			"temperature": 24.40,
+			"humidity": 60.40,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876369,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876370,
+			"temperature": 24.40,
+			"humidity": 60.30,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876371,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876372,
+			"temperature": 24.40,
+			"humidity": 60.40,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876374,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876375,
+			"temperature": 24.40,
+			"humidity": 60.40,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876376,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876377,
+			"temperature": 24.40,
+			"humidity": 60.30,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876378,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876379,
+			"temperature": 24.40,
+			"humidity": 60.30,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876380,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876381,
+			"temperature": 24.40,
+			"humidity": 60.30,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876382,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876383,
+			"temperature": 24.40,
+			"humidity": 60.20,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876384,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876386,
+			"temperature": 24.40,
+			"humidity": 60.10,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876387,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876388,
+			"temperature": 24.40,
+			"humidity": 60.10,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876389,
+			"temperature": null,
+			"humidity": null,
+			"latitude": [
+				null,
+				null,
+				null,
+				null
+			],
+			"longitude": [
+				null,
+				null,
+				null,
+				null
+			]
+		},
+		{
+			"timestamp": 1770876390,
+			"temperature": 24.40,
+			"humidity": 60.10,
 			"latitude": [
 				null,
 				null,

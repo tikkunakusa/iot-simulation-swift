@@ -25,6 +25,11 @@ void modem_power_cycle(int pwr_pin);
 void format_double_to_string(double val, char* buffer, int max_len);
 void format_float_to_string(float val, char* buffer, int max_len);
 
+// Helper for Epoch Time (SNTP / System Clock)
+int64_t get_epoch_timestamp(void);
+void set_epoch_timestamp(int64_t epoch_sec);
+void parse_modem_time_if_present(const char* str);
+
 #ifdef __cplusplus
 }
 #endif

@@ -12,7 +12,11 @@ public class MQTT {
         modem.sendCommand("AT+CMQTTACCQ=0,\"esp32c6_client\",0\r\n")
         vTaskDelay(100)
         
-        modem.sendCommand("AT+CMQTTCONNECT=0,\"\(brokerUri)\",60,1\r\n")
+        let hasTcp = brokerUri.withCString { cStr in
+            return strncmp(cStr, "tcp://", 6) == 0
+        }
+        let formattedUri = hasTcp ? brokerUri : "tcp://\(brokerUri)"
+        modem.sendCommand("AT+CMQTTCONNECT=0,\"\(formattedUri)\",60,1\r\n")
         vTaskDelay(200) // Tunggu agak lama untuk koneksi TCP
         
         isConnected = true

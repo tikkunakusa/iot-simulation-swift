@@ -5,6 +5,9 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
+#include "esp_timer.h"
 
 #define MODEM_UART_PORT UART_NUM_0
 #define BUF_SIZE 1024
@@ -73,3 +76,57 @@ extern "C" void format_double_to_string(double val, char* buffer, int max_len) {
 extern "C" void format_float_to_string(float val, char* buffer, int max_len) {
     snprintf(buffer, max_len, "%.2f", val);
 }
+
+static int64_t g_base_epoch = 1770876300LL; // Fallback epoch timestamp (August 2026)
+
+extern "C" int64_t get_epoch_timestamp(void) {
+    time_t now;
+    time(&now);
+    if (now > 1700000000LL) {
+        return (int64_t)now;
+    }
+    int64_t uptime_sec = esp_timer_get_time() / 1000000LL;
+    return g_base_epoch + uptime_sec;
+}
+
+extern "C" void set_epoch_timestamp(int64_t epoch_sec) {
+    struct timeval tv;
+    tv.tv_sec = (time_t)epoch_sec;
+    tv.tv_usec = 0;
+    settimeofday(&tv, NULL);
+}
+
+extern "C" void parse_modem_time_if_present(const char* str) {
+    if (!str) return;
+    const char* p = strstr(str, "+CCLK: \"");
+    if (p) {
+        int year, month, day, hour, min, sec;
+        if (sscanf(p + 8, "%d/%d/%d,%d:%d:%d", &year, &month, &day, &hour, &min, &sec) == 6) {
+            struct tm tm_info;
+            memset(&tm_info, 0, sizeof(tm_info));
+            tm_info.tm_year = (year < 100 ? year + 100 : year - 1900);
+            tm_info.tm_mon = month - 1;
+            tm_info.tm_mday = day;
+            tm_info.tm_hour = hour;
+            tm_info.tm_min = min;
+            tm_info.tm_sec = sec;
+            time_t t = mktime(&tm_info);
+            if (t > 1700000000LL) {
+                set_epoch_timestamp((int64_t)t);
+                ESP_LOGI(TAG, "System time synced from modem AT+CCLK: %lld", (long long)t);
+            }
+        }
+    }
+}
+
+// Embedded Swift Unicode Stubs to satisfy linker when standard library tables are omitted
+extern "C" {
+    bool _swift_stdlib_isInCB_Consonant(uint32_t scalar) { return false; }
+    uint8_t _swift_stdlib_getGraphemeBreakProperty(uint32_t scalar) { return 0; }
+    uint16_t _swift_stdlib_getNormData(uint32_t scalar) { return 0; }
+    uint32_t _swift_stdlib_getComposition(uint32_t a, uint32_t b) { return 0; }
+    uint16_t _swift_stdlib_getDecompositionEntry(uint32_t scalar) { return 0; }
+    const uint8_t _swift_stdlib_nfd_decompositions[1] = {0};
+}
+
+

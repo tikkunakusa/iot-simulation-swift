@@ -7,11 +7,11 @@ public class SNTP {
         vTaskDelay(50)
         modem.sendCommand("AT+CNTP\r\n")
         vTaskDelay(100)
+        modem.sendCommand("AT+CCLK?\r\n")
+        vTaskDelay(50)
     }
     
-    // Karena mem-parsing AT+CCLK? secara manual di Swift bisa rumit tanpa library regex,
-    // kita kembalikan epoch buatan (atau 0) sebagai placeholder jika belum perlu waktu presisi.
     public static var currentEpoch: Int {
-        return 0
+        return Int(get_epoch_timestamp())
     }
 }

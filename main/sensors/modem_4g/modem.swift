@@ -34,7 +34,9 @@ public class Modem4G {
 
         let bytesRead = modem_read_data(buffer, Int32(bufferSize))
         if bytesRead > 0 {
-            if let responseString = String(validatingUTF8: UnsafeRawPointer(buffer).assumingMemoryBound(to: CChar.self)) {
+            let cPtr = UnsafeRawPointer(buffer).assumingMemoryBound(to: CChar.self)
+            parse_modem_time_if_present(cPtr)
+            if let responseString = String(validatingUTF8: cPtr) {
                 print("Modem: \(responseString)")
             }
         }
