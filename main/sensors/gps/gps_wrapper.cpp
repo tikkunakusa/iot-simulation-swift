@@ -18,6 +18,10 @@ void gps_free(gps_handle_t handle) {
     }
 }
 
+static char last_nmea_sentence[128] = {0};
+static char nmea_line_buf[128] = {0};
+static int nmea_line_idx = 0;
+
 void gps_update(gps_handle_t handle) {
     if (!handle) return;
     TinyGPSPlus *gps = static_cast<TinyGPSPlus*>(handle);
@@ -26,7 +30,24 @@ void gps_update(gps_handle_t handle) {
     if (len > 0) {
         buf[len] = '\0';
         for (int i = 0; i < len; i++) {
-            gps->encode(static_cast<char>(buf[i]));
+            char c = static_cast<char>(buf[i]);
+            gps->encode(c);
+
+            if (c == '$') {
+                nmea_line_idx = 0;
+            }
+            if (nmea_line_idx < (int)sizeof(nmea_line_buf) - 1) {
+                if (c != '\r' && c != '\n') {
+                    nmea_line_buf[nmea_line_idx++] = c;
+                } else if (nmea_line_idx > 5) {
+                    nmea_line_buf[nmea_line_idx] = '\0';
+                    if (strstr(nmea_line_buf, "$GPGSV") != NULL || strstr(nmea_line_buf, "$GPGGA") != NULL || strstr(nmea_line_buf, "$GPRMC") != NULL) {
+                        strncpy(last_nmea_sentence, nmea_line_buf, sizeof(last_nmea_sentence) - 1);
+                        last_nmea_sentence[sizeof(last_nmea_sentence) - 1] = '\0';
+                    }
+                    nmea_line_idx = 0;
+                }
+            }
         }
     }
 }
@@ -93,20 +114,23 @@ void gps_uart_init(int tx_pin, int rx_pin, int baud_rate) {
 }
 
 void print_gps_location(double lat, double lng) {
-    printf("GPS Location -> Latitude: %.6f, Longitude: %.6f\n", lat, lng);
+    printf("[GPS   ] 🛰️ Latitude: %.6f, Longitude: %.6f\n", lat, lng);
 }
 
 void print_gps_status(gps_handle_t handle) {
     if (!handle) return;
     TinyGPSPlus *gps = static_cast<TinyGPSPlus*>(handle);
     if (gps->location.isValid()) {
-        printf("GPS Fix! -> Latitude: %.6f, Longitude: %.6f (Sats: %lu)\n",
+        printf("[GPS   ] 🛰️ Latitude: %.6f, Longitude: %.6f (Sats: %lu)\n",
                gps->location.lat(), gps->location.lng(), (unsigned long)gps->satellites.value());
     } else {
-        printf("Waiting for satellite lock... [Bytes rx: %lu | Sentences OK: %lu | Sats in view: %lu]\n",
+        printf("[GPS   ] ⚠️ Mencari sinyal GPS (waiting for fix)... [Bytes rx: %lu | Sentences OK: %lu | Sats in view: %lu]\n",
                (unsigned long)gps->charsProcessed(),
                (unsigned long)gps->passedChecksum(),
                (unsigned long)gps->satellites.value());
+        if (last_nmea_sentence[0] != '\0') {
+            printf("[GPS-NMEA] 💬 Raw NMEA: %s\n", last_nmea_sentence);
+        }
     }
 }
 

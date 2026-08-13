@@ -29,6 +29,10 @@ void format_float_to_string(float val, char* buffer, int max_len);
 int64_t get_epoch_timestamp(void);
 void set_epoch_timestamp(int64_t epoch_sec);
 void parse_modem_time_if_present(const char* str);
+void parse_modem_gnss_if_present(const char* str);
+bool modem_gnss_has_fix(void);
+double modem_gnss_get_latitude(void);
+double modem_gnss_get_longitude(void);
 void delay_ms(uint32_t ms);
 
 #ifdef __cplusplus

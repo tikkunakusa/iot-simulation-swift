@@ -38,13 +38,15 @@ public class DataManager {
 	}
 
 	public func processQueue() {
-		// Publish when we have at least 15 collected data points (15 seconds, ~2.8 KB payload)
-		if records.count >= 15 {
+		// Kirim ke MQTT setiap 10 detik sekali (10 records = 10 detik)
+		if records.count >= 10 {
 			if MQTT.isConnected {
 				transmitData()
 			} else {
-				print("DataManager: Menunggu koneksi MQTT untuk mengirim \(records.count) data...")
+				print("[QUEUE ] ⚠️ Menunggu koneksi MQTT/jaringan untuk mengirim \(records.count) record (Tersimpan di Cache FIFO: \(records.count)/\(maxRecords))...")
 			}
+		} else if records.count > 0 && records.count % 5 == 0 {
+			print("[QUEUE ] ⏳ Mengumpulkan data telemetri: \(records.count)/10 detik (Siap dipublikasikan dalam \(10 - records.count) detik lagi)...")
 		}
 	}
 

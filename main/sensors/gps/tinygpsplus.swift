@@ -46,12 +46,11 @@ public class GPS {
         return nil
     }
 
-    /// Prints Latitude and Longitude if valid fix is acquired
     public func printLocation() {
         if gps_location_is_valid(self.handle) {
             print_gps_location(gps_location_lat(self.handle), gps_location_lng(self.handle))
         } else {
-            print("Mencari sinyal GPS (waiting for fix)...")
+            print_gps_status(self.handle)
         }
     }
 

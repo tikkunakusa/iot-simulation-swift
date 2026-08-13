@@ -23,6 +23,14 @@ public class MQTT {
             delay_ms(100)
             modem.readResponse()
         }
+
+        // Cleanup sesi MQTT sebelumnya jika ada
+        modem.sendCommand("AT+CMQTTREL=0\r\n")
+        delay_ms(100)
+        modem.readResponse()
+        modem.sendCommand("AT+CMQTTSTOP\r\n")
+        delay_ms(100)
+        modem.readResponse()
         
         print("[MQTT  ] ⚙️ Memulai service (AT+CMQTTSTART)...")
         modem.sendCommand("AT+CMQTTSTART\r\n")

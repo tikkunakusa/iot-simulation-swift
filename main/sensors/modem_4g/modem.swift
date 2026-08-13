@@ -47,6 +47,7 @@ public class Modem4G {
             
             let cPtr = UnsafeRawPointer(buffer).assumingMemoryBound(to: CChar.self)
             parse_modem_time_if_present(cPtr)
+            parse_modem_gnss_if_present(cPtr)
             
             var hasPrintable = false
             for i in 0..<Int(bytesRead) {
@@ -61,5 +62,31 @@ public class Modem4G {
                 print("Modem: \(String(cString: cPtr))")
             }
         }
+    }
+
+    /// Turn on GNSS power on SIMCom A7670C modem
+    public func enableGNSS() {
+        sendCommand("AT+CGNSSPWR=1\r\n")
+    }
+
+    /// Request GNSS location info (+CGNSSINFO)
+    public func requestGNSSInfo() {
+        sendCommand("AT+CGNSSINFO\r\n")
+    }
+
+    /// Request Cell Tower LBS location (+CLBS=1,1)
+    public func requestLBSLocation() {
+        sendCommand("AT+CLBS=1,1\r\n")
+    }
+
+    /// Get last parsed location from Modem GNSS/LBS
+    public func getLocation() -> GPSData? {
+        if modem_gnss_has_fix() {
+            return GPSData(
+                latitude: modem_gnss_get_latitude(),
+                longitude: modem_gnss_get_longitude()
+            )
+        }
+        return nil
     }
 }

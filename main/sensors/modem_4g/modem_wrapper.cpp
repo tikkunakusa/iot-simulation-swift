@@ -140,6 +140,69 @@ extern "C" void parse_modem_time_if_present(const char* str) {
     }
 }
 
+static bool g_modem_gnss_fix = false;
+static double g_modem_lat = 0.0;
+static double g_modem_lng = 0.0;
+
+extern "C" bool modem_gnss_has_fix(void) {
+    return g_modem_gnss_fix;
+}
+
+extern "C" double modem_gnss_get_latitude(void) {
+    return g_modem_lat;
+}
+
+extern "C" double modem_gnss_get_longitude(void) {
+    return g_modem_lng;
+}
+
+extern "C" void parse_modem_gnss_if_present(const char* str) {
+    if (!str) return;
+
+    // Check for +CGNSSINFO:
+    const char* p = strstr(str, "+CGNSSINFO:");
+    if (p) {
+        p += 11;
+        while (*p == ' ') p++;
+        
+        int mode = 0, gps_sats = 0, glonass_sats = 0, beidou_sats = 0;
+        double lat_val = 0.0, lng_val = 0.0;
+        char ns = 'N', ew = 'E';
+        
+        if (sscanf(p, "%d,%d,%d,%d,%lf,%c,%lf,%c", &mode, &gps_sats, &glonass_sats, &beidou_sats, &lat_val, &ns, &lng_val, &ew) >= 7) {
+            if (ns == 'S' || ns == 's') {
+                if (lat_val > 0) lat_val = -lat_val;
+            }
+            if (ew == 'W' || ew == 'w') {
+                if (lng_val > 0) lng_val = -lng_val;
+            }
+            g_modem_lat = lat_val;
+            g_modem_lng = lng_val;
+            g_modem_gnss_fix = true;
+            printf("[MODEM-GPS] 🛰️ Latitude: %.6f, Longitude: %.6f (Sats: %d)\n", g_modem_lat, g_modem_lng, gps_sats + glonass_sats + beidou_sats);
+            return;
+        } else {
+            g_modem_gnss_fix = false;
+            printf("[MODEM-GPS] ⚠️ Mencari sinyal GNSS via modem (waiting for fix)...\n");
+        }
+    }
+
+    // Check for +CLBS:
+    const char* clbs = strstr(str, "+CLBS:");
+    if (clbs) {
+        clbs += 6;
+        while (*clbs == ' ') clbs++;
+        int err = -1, accuracy = 0;
+        double lat_val = 0.0, lng_val = 0.0;
+        if (sscanf(clbs, "%d,%lf,%lf,%d", &err, &lat_val, &lng_val, &accuracy) >= 3 && err == 0) {
+            g_modem_lat = lat_val;
+            g_modem_lng = lng_val;
+            g_modem_gnss_fix = true;
+            printf("[MODEM-LBS] 📡 BTS Cell Location -> Latitude: %.6f, Longitude: %.6f (Acc: %dm)\n", g_modem_lat, g_modem_lng, accuracy);
+        }
+    }
+}
+
 // Embedded Swift Unicode Stubs to satisfy linker when standard library tables are omitted
 extern "C" {
     void delay_ms(uint32_t ms) {

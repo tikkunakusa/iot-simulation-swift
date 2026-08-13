@@ -35,6 +35,11 @@ func main() {
 	delay_ms(200)
 	modem.readResponse()
 
+	print("[MODEM ] 🛰️ Menyalakan GPS/GNSS Internal Modem (AT+CGNSSPWR=1)...")
+	modem.enableGNSS()
+	delay_ms(300)
+	modem.readResponse()
+
 	SNTP.initialize()
 	MQTT.start(brokerUri: "tcp://test.mosquitto.org:1883")
 
@@ -43,6 +48,9 @@ func main() {
 
 	var tempLatitudes: [Double?] = []
 	var tempLongitudes: [Double?] = []
+
+	var lastKnownTemp: Float? = nil
+	var lastKnownHum: Float? = nil
 
 	while true {
 		// --- Animasi Sederhana Traffic Light (Tiap 1 Detik) ---
@@ -54,9 +62,12 @@ func main() {
 			counter += 1
 		}
 
-		// Update GPS (4x per second)
+		// Update standalone GPS Neo-6M (4x per second)
 		gps.update()
-		if let location = gps.getLocation() {
+
+		// Gunakan lokasi standalone GPS Neo-6M atau fallback ke lokasi Modem GNSS/LBS
+		let currentLocation = gps.getLocation() ?? modem.getLocation()
+		if let location = currentLocation {
 			tempLatitudes.append(location.latitude)
 			tempLongitudes.append(location.longitude)
 		} else {
@@ -66,17 +77,28 @@ func main() {
 
 		// Setiap 4 ticks (4 * 250ms = 1 detik)
 		if tickCount == 3 {
-			var currentTemp: Float? = nil
-			var currentHum: Float? = nil
+			// Membaca & mencetak lokasi GPS: Utamakan Standalone GPS (Neo-6M), Fallback ke Modem 4G
+			if let standaloneLoc = gps.getLocation() {
+				print_gps_location(standaloneLoc.latitude, standaloneLoc.longitude)
+			} else if let modemLoc = modem.getLocation() {
+				print_gps_location(modemLoc.latitude, modemLoc.longitude)
+			} else {
+				gps.printLocation()
+			}
 
-			// Membaca dari DHT22 setiap 3 detik agar sensor stabil & bebas error phase-B
+			// Request update lokasi dari Modem GNSS & LBS secara berkala
 			if counter % 3 == 0 {
+				modem.requestGNSSInfo()
+			} else if counter % 3 == 1 {
+				modem.requestLBSLocation()
+			}
+
+			// Membaca dari DHT22 setiap 2 detik agar sensor stabil & update data suhu/kelembaban terakhir
+			if counter % 2 == 0 {
 				if let data = dht.read() {
-					currentTemp = data.temperature
-					currentHum = data.humidity
+					lastKnownTemp = data.temperature
+					lastKnownHum = data.humidity
 					print_dht_data(data.humidity, data.temperature)
-				} else {
-					print("[DHT22 ] ⚠️ Sensor sibuk, mencoba membaca ulang di siklus berikutnya...")
 				}
 			}
 
@@ -84,8 +106,8 @@ func main() {
 
 			DataManager.shared.addRecord(
 				timestamp: epochTime,
-				temperature: currentTemp,
-				humidity: currentHum,
+				temperature: lastKnownTemp,
+				humidity: lastKnownHum,
 				latitudes: tempLatitudes,
 				longitudes: tempLongitudes
 			)

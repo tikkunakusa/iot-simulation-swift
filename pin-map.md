@@ -22,7 +22,7 @@ Berikut adalah rekapitulasi sambungan kabel (wiring) final dari seluruh sensor d
 | :--- | :--- | :--- |
 | **TX** | GPIO 5 | Jalur RX ESP32 (Menerima data koordinat satelit) |
 | **RX** | GPIO 6 | Jalur TX ESP32 (Mengirim konfigurasi ke GPS) |
-| **VCC** | 3V3 (3.3V) | Daya untuk modul GPS |
+| **VCC** | **3V3** | Daya 3.3V dari ESP32-C6 (Power murni yang terbukti mengaktifkan modul GPS & komunikasi UART) |
 | **GND** | GND | Ground bersama |
 
 ## 3. Sensor Suhu DHT22
