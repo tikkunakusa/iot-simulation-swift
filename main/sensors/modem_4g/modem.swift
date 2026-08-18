@@ -48,6 +48,8 @@ public class Modem4G {
             let cPtr = UnsafeRawPointer(buffer).assumingMemoryBound(to: CChar.self)
             parse_modem_time_if_present(cPtr)
             parse_modem_gnss_if_present(cPtr)
+            parse_modem_csq_if_present(cPtr)
+            parse_modem_mqtt_if_present(cPtr)
             
             var hasPrintable = false
             for i in 0..<Int(bytesRead) {
@@ -77,6 +79,31 @@ public class Modem4G {
     /// Request Cell Tower LBS location (+CLBS=1,1)
     public func requestLBSLocation() {
         sendCommand("AT+CLBS=1,1\r\n")
+    }
+
+    /// Request signal quality (+CSQ)
+    public func requestSignalQuality() {
+        sendCommand("AT+CSQ\r\n")
+    }
+
+    /// Print current signal strength status
+    public func printSignalStatus() {
+        modem_print_signal_status()
+    }
+
+    /// Check whether cellular signal is valid (RSSI > 0 and RSSI < 99)
+    public var hasSignal: Bool {
+        return modem_has_signal()
+    }
+
+    /// Get last parsed RSSI value (0-31, or 99 if unknown)
+    public var signalStrengthRSSI: Int32 {
+        return modem_get_rssi()
+    }
+
+    /// Get signal strength in dBm (-113 dBm to -51 dBm, or -999 if unknown)
+    public var signalStrengthDBm: Int32 {
+        return modem_get_signal_dbm()
     }
 
     /// Get last parsed location from Modem GNSS/LBS

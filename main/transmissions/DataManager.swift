@@ -10,7 +10,7 @@ public class DataManager {
 	public static let shared = DataManager()
 
 	private var records: [SensorRecord] = []
-	private let maxRecords = 3600  // 1 hour max cache (FIFO)
+	private let maxRecords = 30  // 30 seconds max cache (FIFO testing)
 
 	private let mqttTopic = "mango/shipment/telemetry"
 	private let deviceId = "4733d00b-6658-4e8a-ad13-391940975e29"
@@ -31,22 +31,40 @@ public class DataManager {
 
 		records.append(record)
 
-		// FIFO logic to keep maximum of 1 hour data (3600 records)
+		// FIFO logic to keep maximum of 30 seconds data (30 records)
 		if records.count > maxRecords {
 			records.removeFirst(records.count - maxRecords)
 		}
 	}
 
 	public func processQueue() {
-		// Kirim ke MQTT setiap 10 detik sekali (10 records = 10 detik)
-		if records.count >= 10 {
+		let batchSize = 30
+		// Kirim ke MQTT setiap batch 30 record (30 detik)
+		if records.count >= batchSize {
+			print("[QUEUE ] 🔍 Memeriksa status sinyal seluler sebelum transmisi...")
+			Modem4G.shared?.requestSignalQuality()
+			for _ in 0..<3 {
+				delay_ms(100)
+				Modem4G.shared?.readResponse()
+			}
+
+			guard let modem = Modem4G.shared, modem.hasSignal else {
+				print("[QUEUE ] ⚠️ Sinyal seluler tidak tersedia (CSQ: \(Modem4G.shared?.signalStrengthRSSI ?? 99)). Data telemetri DITAMPUNG di antrian FIFO: \(records.count)/\(maxRecords) record [\(records.count)s / maks 30 detik].")
+				return
+			}
+
+			if !MQTT.isConnected {
+				print("[QUEUE ] 🔄 Sinyal terdeteksi (\(modem.signalStrengthRSSI)/31), menghubungkan MQTT...")
+				MQTT.start(brokerUri: "tcp://test.mosquitto.org:1883")
+			}
+
 			if MQTT.isConnected {
-				transmitData()
+				transmitData(batchSize: batchSize)
 			} else {
-				print("[QUEUE ] ⚠️ Menunggu koneksi MQTT/jaringan untuk mengirim \(records.count) record (Tersimpan di Cache FIFO: \(records.count)/\(maxRecords))...")
+				print("[QUEUE ] ⚠️ Menunggu koneksi MQTT/jaringan (Tersimpan di FIFO Cache: \(records.count)/\(maxRecords) record [\(records.count)s / maks 30 detik])...")
 			}
 		} else if records.count > 0 && records.count % 5 == 0 {
-			print("[QUEUE ] ⏳ Mengumpulkan data telemetri: \(records.count)/10 detik (Siap dipublikasikan dalam \(10 - records.count) detik lagi)...")
+			print("[QUEUE ] ⏳ Mengumpulkan data telemetri: \(records.count)/\(batchSize) detik (Tersimpan di FIFO: \(records.count)/\(maxRecords))...")
 		}
 	}
 
@@ -62,11 +80,15 @@ public class DataManager {
 		return String(cString: buffer)
 	}
 
-	private func transmitData() {
+	private func transmitData(batchSize: Int = 10) {
+		let countToSend = min(batchSize, records.count)
+		guard countToSend > 0 else { return }
+
 		// Construct JSON string manually to avoid heavy Foundation imports
 		var jsonString = "{\"device_id\":\"\(deviceId)\",\"log\":["
 
-		for (index, record) in records.enumerated() {
+		for index in 0..<countToSend {
+			let record = records[index]
 			var logEntry = "{"
 			logEntry += "\"timestamp\":\(record.timestamp),"
 
@@ -112,17 +134,22 @@ public class DataManager {
 			logEntry += "}"
 
 			jsonString += logEntry
-			if index < records.count - 1 {
+			if index < countToSend - 1 {
 				jsonString += ","
 			}
 		}
 
 		jsonString += "]}"
 
-		print("[QUEUE ] 🚀 Mempublikasikan \(records.count) record ke topik '\(mqttTopic)'...")
-		MQTT.publish(topic: mqttTopic, data: jsonString)
+		print("[QUEUE ] 🚀 Mempublikasikan batch \(countToSend) record ke topik '\(mqttTopic)' (Total antrian: \(records.count)/\(maxRecords))...")
+		let isSuccess = MQTT.publish(topic: mqttTopic, data: jsonString)
 
-		// Clear records after transmission
-		records.removeAll(keepingCapacity: true)
+		if isSuccess {
+			// Hapus record tertua yang sudah terkirim dari antrian FIFO
+			records.removeFirst(countToSend)
+			print("[QUEUE ] ✅ Batch \(countToSend) record berhasil terkirim. Sisa antrian FIFO: \(records.count)/\(maxRecords)")
+		} else {
+			print("[QUEUE ] ⚠️ Publish gagal! \(countToSend) record tetap disimpan di antrian FIFO (\(records.count)/\(maxRecords)) untuk dikirim ulang nanti.")
+		}
 	}
 }

@@ -86,11 +86,13 @@ func main() {
 				gps.printLocation()
 			}
 
-			// Request update lokasi dari Modem GNSS & LBS secara berkala
+			// Request update lokasi dari Modem GNSS & LBS serta kekuatan sinyal secara berkala
 			if counter % 3 == 0 {
 				modem.requestGNSSInfo()
 			} else if counter % 3 == 1 {
 				modem.requestLBSLocation()
+			} else {
+				modem.requestSignalQuality()
 			}
 
 			// Membaca dari DHT22 setiap 2 detik agar sensor stabil & update data suhu/kelembaban terakhir

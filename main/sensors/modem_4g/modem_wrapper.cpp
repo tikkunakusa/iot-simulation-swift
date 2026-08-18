@@ -203,6 +203,133 @@ extern "C" void parse_modem_gnss_if_present(const char* str) {
     }
 }
 
+static int g_modem_rssi = 99;
+static int g_modem_ber = 99;
+static bool g_mqtt_connected = false;
+static bool g_mqtt_pub_success = false;
+
+extern "C" void parse_modem_csq_if_present(const char* str) {
+    if (!str) return;
+    const char* p = strstr(str, "+CSQ:");
+    if (p) {
+        p += 5;
+        while (*p == ' ') p++;
+        int rssi = 99, ber = 99;
+        if (sscanf(p, "%d,%d", &rssi, &ber) >= 1) {
+            g_modem_rssi = rssi;
+            g_modem_ber = ber;
+            modem_print_signal_status();
+        }
+    }
+}
+
+extern "C" void parse_modem_mqtt_if_present(const char* str) {
+    if (!str) return;
+    
+    // Parse +CMQTTCONNECT: <client_idx>,<err_code>
+    const char* conn = strstr(str, "+CMQTTCONNECT:");
+    if (conn) {
+        conn += 14;
+        while (*conn == ' ') conn++;
+        int client_idx = 0, err_code = -1;
+        if (sscanf(conn, "%d,%d", &client_idx, &err_code) >= 2) {
+            if (err_code == 0) {
+                g_mqtt_connected = true;
+            } else {
+                g_mqtt_connected = false;
+            }
+        }
+    }
+    
+    // Parse +CMQTTPUB: <client_idx>,<err_code>
+    const char* pub = strstr(str, "+CMQTTPUB:");
+    if (pub) {
+        pub += 10;
+        while (*pub == ' ') pub++;
+        int client_idx = 0, err_code = -1;
+        if (sscanf(pub, "%d,%d", &client_idx, &err_code) >= 2) {
+            if (err_code == 0) {
+                g_mqtt_pub_success = true;
+            } else {
+                g_mqtt_pub_success = false;
+            }
+        }
+    }
+    
+    // Parse disconnect notifications or ERROR
+    if (strstr(str, "+CMQTTDISC:") != NULL || 
+        strstr(str, "+CMQTTCONNLOST:") != NULL || 
+        strstr(str, "+CMQTTNONET") != NULL) {
+        g_mqtt_connected = false;
+    }
+}
+
+extern "C" int modem_get_rssi(void) {
+    return g_modem_rssi;
+}
+
+extern "C" int modem_get_ber(void) {
+    return g_modem_ber;
+}
+
+extern "C" bool modem_has_signal(void) {
+    return (g_modem_rssi > 0 && g_modem_rssi < 99);
+}
+
+extern "C" bool modem_is_mqtt_connected(void) {
+    return g_mqtt_connected;
+}
+
+extern "C" bool modem_is_mqtt_pub_success(void) {
+    return g_mqtt_pub_success;
+}
+
+extern "C" void modem_reset_mqtt_pub_status(void) {
+    g_mqtt_pub_success = false;
+}
+
+extern "C" void modem_reset_mqtt_connect_status(void) {
+    g_mqtt_connected = false;
+}
+
+extern "C" int modem_get_signal_dbm(void) {
+    if (g_modem_rssi < 0 || g_modem_rssi > 31) {
+        return -999;
+    }
+    return -113 + (g_modem_rssi * 2);
+}
+
+extern "C" void modem_print_signal_status(void) {
+    if (g_modem_rssi == 99 || g_modem_rssi < 0) {
+        printf("[MODEM ] 📶 Signal Strength: ⚠️ Tidak Ada Sinyal / Unknown (CSQ: 99)\n");
+        return;
+    }
+    
+    int dbm = -113 + (g_modem_rssi * 2);
+    const char* quality;
+    const char* bar;
+    
+    if (g_modem_rssi >= 20) {
+        quality = "Sangat Baik (Excellent)";
+        bar = "[████]";
+    } else if (g_modem_rssi >= 15) {
+        quality = "Baik (Good)";
+        bar = "[███░]";
+    } else if (g_modem_rssi >= 10) {
+        quality = "Cukup (Fair)";
+        bar = "[██░░]";
+    } else if (g_modem_rssi >= 1) {
+        quality = "Lemah (Poor)";
+        bar = "[█░░░]";
+    } else {
+        quality = "Sangat Lemah (Marginal)";
+        bar = "[░░░░]";
+    }
+    
+    printf("[MODEM ] 📶 Signal Strength: %s (%d dBm | CSQ: %d/31 | %s)\n", 
+           quality, dbm, g_modem_rssi, bar);
+}
+
 // Embedded Swift Unicode Stubs to satisfy linker when standard library tables are omitted
 extern "C" {
     void delay_ms(uint32_t ms) {

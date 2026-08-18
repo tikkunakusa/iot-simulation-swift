@@ -4,6 +4,8 @@ public class MQTT {
     public static func start(brokerUri: String) {
         guard let modem = Modem4G.shared else { return }
         
+        modem_reset_mqtt_connect_status()
+        
         print("[MQTT  ] 📡 Inisialisasi APN & Network Context (AT+CGDCONT / AT+CGACT)...")
         modem.sendCommand("AT+CGDCONT=1,\"IP\",\"internet\"\r\n")
         for _ in 0..<5 {
@@ -56,18 +58,42 @@ public class MQTT {
         for _ in 0..<40 {
             delay_ms(100) // Polling 4 detik untuk menangkap balasan URC (+CMQTTCONNECT: 0,0)
             modem.readResponse()
+            if modem_is_mqtt_connected() {
+                break
+            }
         }
         
-        isConnected = true
+        isConnected = modem_is_mqtt_connected()
+        if isConnected {
+            print("[MQTT  ] ✅ Terhubung ke broker MQTT!")
+        } else {
+            print("[MQTT  ] ⚠️ Belum terhubung ke broker MQTT (Menunggu sinyal/jaringan).")
+        }
     }
     
-    public static func publish(topic: String, data: String) {
-        guard let modem = Modem4G.shared else { return }
+    @discardableResult
+    public static func publish(topic: String, data: String) -> Bool {
+        guard let modem = Modem4G.shared else { return false }
+        
+        print("[MQTT  ] 📶 Memeriksa kekuatan sinyal modem...")
+        modem.requestSignalQuality()
+        for _ in 0..<3 {
+            delay_ms(100)
+            modem.readResponse()
+        }
+        modem.printSignalStatus()
+        
+        if !modem.hasSignal {
+            print("[MQTT  ] ⚠️ Tidak ada sinyal seluler (CSQ: \(modem.signalStrengthRSSI)). Pembatalan publish, data tetap disimpan di buffer FIFO.")
+            return false
+        }
         
         if !isConnected {
             print("[MQTT  ] ⚠️ Belum terhubung ke broker, mengabaikan publish.")
-            return
+            return false
         }
+        
+        modem_reset_mqtt_pub_status()
         
         print("[MQTT  ] 📝 Setting topik '\(topic)' (\(topic.utf8.count) bytes)...")
         modem.sendCommand("AT+CMQTTTOPIC=0,\(topic.utf8.count)\r\n")
@@ -98,10 +124,22 @@ public class MQTT {
         print("[MQTT  ] 🚀 Mengeksekusi AT+CMQTTPUB (QoS 1)...")
         modem.sendCommand("AT+CMQTTPUB=0,1,60\r\n")
         
-        for _ in 0..<20 {
-            delay_ms(100) // Polling 2 detik untuk menangkap balasan URC (+CMQTTPUB: 0,0)
+        var published = false
+        for _ in 0..<25 {
+            delay_ms(100) // Polling 2.5 detik untuk menangkap balasan URC (+CMQTTPUB: 0,0)
             modem.readResponse()
+            if modem_is_mqtt_pub_success() {
+                published = true
+                break
+            }
         }
-        print("[MQTT  ] ✅ PUBLISH SUKSES! (QoS 1)")
+        
+        if published {
+            print("[MQTT  ] ✅ PUBLISH SUKSES! (QoS 1)")
+            return true
+        } else {
+            print("[MQTT  ] ❌ PUBLISH GAGAL / Timeout (QoS 1).")
+            return false
+        }
     }
 }
