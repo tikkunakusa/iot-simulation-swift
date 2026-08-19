@@ -11,5 +11,6 @@
 #include <dht.h>
 #include "sensors/gps/gps_wrapper.h"
 #include "sensors/modem_4g/modem_wrapper.h"
+#include "wifi/wifi_wrapper.h"
 
 #endif

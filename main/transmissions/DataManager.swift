@@ -41,20 +41,37 @@ public class DataManager {
 		let batchSize = 30
 		// Kirim ke MQTT setiap batch 30 record (30 detik)
 		if records.count >= batchSize {
-			print("[QUEUE ] 🔍 Memeriksa status sinyal seluler sebelum transmisi...")
-			Modem4G.shared?.requestSignalQuality()
-			for _ in 0..<3 {
-				delay_ms(100)
-				Modem4G.shared?.readResponse()
-			}
+			if MQTT.activeBearer == .cellular4G {
+				print("[QUEUE ] 🔍 Memeriksa status sinyal seluler sebelum transmisi...")
+				Modem4G.shared?.requestSignalQuality()
+				for _ in 0..<3 {
+					delay_ms(100)
+					Modem4G.shared?.readResponse()
+				}
 
-			guard let modem = Modem4G.shared, modem.hasSignal else {
-				print("[QUEUE ] ⚠️ Sinyal seluler tidak tersedia (CSQ: \(Modem4G.shared?.signalStrengthRSSI ?? 99)). Data telemetri DITAMPUNG di antrian FIFO: \(records.count)/\(maxRecords) record [\(records.count)s / maks 30 detik].")
-				return
+				if let modem = Modem4G.shared, !modem.hasSignal {
+					print("[QUEUE ] ⚠️ Sinyal seluler tidak tersedia (CSQ: \(modem.signalStrengthRSSI)).")
+					if let ssid = MQTT.wifiSSID, let pass = MQTT.wifiPassword {
+						print("[QUEUE ] 🚨 Memicu automatic failover ke Wi-Fi Tethering Hotspot...")
+						let wifiOk = MQTT.switchToWiFi(ssid: ssid, password: pass)
+						if !wifiOk {
+							print("[QUEUE ] ⚠️ Wi-Fi belum siap. Data telemetri DITAMPUNG di antrian FIFO (\(records.count)/\(maxRecords)).")
+							return
+						}
+					} else {
+						print("[QUEUE ] ⚠️ Data telemetri DITAMPUNG di antrian FIFO: \(records.count)/\(maxRecords) record [\(records.count)s / maks 30 detik].")
+						return
+					}
+				}
+			} else {
+				if !WiFi.isConnected {
+					print("[QUEUE ] 🔄 Wi-Fi terputus, mencoba reconnect...")
+					WiFi.reconnect()
+				}
 			}
 
 			if !MQTT.isConnected {
-				print("[QUEUE ] 🔄 Sinyal terdeteksi (\(modem.signalStrengthRSSI)/31), menghubungkan MQTT...")
+				print("[QUEUE ] 🔄 Menghubungkan ulang MQTT (\(MQTT.activeBearer == .wifi ? "Wi-Fi" : "4G"))...")
 				MQTT.reconnect()
 			}
 
@@ -141,13 +158,13 @@ public class DataManager {
 
 		jsonString += "]}"
 
-		print("[QUEUE ] 🚀 Mempublikasikan batch \(countToSend) record ke topik '\(mqttTopic)' (Total antrian: \(records.count)/\(maxRecords))...")
+		print("[QUEUE ] 🚀 Mempublikasikan batch \(countToSend) record ke topik '\(mqttTopic)' via \(MQTT.activeBearer == .wifi ? "Wi-Fi" : "4G") (Total antrian: \(records.count)/\(maxRecords))...")
 		let isSuccess = MQTT.publish(topic: mqttTopic, data: jsonString)
 
 		if isSuccess {
 			// Hapus record tertua yang sudah terkirim dari antrian FIFO
 			records.removeFirst(countToSend)
-			print("[QUEUE ] ✅ Batch \(countToSend) record berhasil terkirim. Sisa antrian FIFO: \(records.count)/\(maxRecords)")
+			print("[QUEUE ] ✅ Batch \(countToSend) record berhasil terkirim via \(MQTT.activeBearer == .wifi ? "Wi-Fi" : "4G"). Sisa antrian FIFO: \(records.count)/\(maxRecords)")
 		} else {
 			print("[QUEUE ] ⚠️ Publish gagal! \(countToSend) record tetap disimpan di antrian FIFO (\(records.count)/\(maxRecords)) untuk dikirim ulang nanti.")
 		}
