@@ -7,14 +7,26 @@ Berikut adalah rekapitulasi sambungan kabel (wiring) final dari seluruh sensor d
 
 ## 1. Modem 4G SimCom A7670C
 
+> [!IMPORTANT]
+> **Skema Daya Modem (Power Supply Terpisah):**
+> - **ESP32 TIDAK menyediakan 5V:** Daya utama modem **TIDAK diambil dari pin ESP32**.
+> - **Modem ditenagai langsung via port USB modem** (colok kabel USB Type-C/Micro-USB ke charger adaptor HP / powerbank 5V 2A).
+> - **Pin 3V3 ESP32 HANYA dihubungkan ke pin VEXT / VTTL** modem sebagai referensi tegangan sinyal logika UART (arus sangat kecil, <1mA, aman untuk ESP32).
+
+> [!WARNING]
+> **Wajib Menghubungkan 3V3 ke VEXT/VTTL!**
+> Pin **VEXT / VTTL / V_MCU** pada modul modem adalah pin referensi tegangan logika UART (*level shifter*).
+> - **Hubungkan pin 3V3 dari ESP32 ke pin VEXT (atau VTTL) modem.**
+> - Jika pin VEXT tidak terhubung ke 3V3, modul modem tidak akan mengirimkan atau merespons sinyal UART (perintah AT akan timeout / tidak ada respon sama sekali).
+
 | Pin Modem | Pin ESP32-C6 | Keterangan |
 | :--- | :--- | :--- |
+| **VEXT / VTTL** | **3V3 (3.3V)** | **Wajib:** Referensi logika UART 3.3V (dari ESP32) |
 | **TXD** | GPIO 22 | Jalur RX ESP32 (Menerima balasan AT dari Modem) |
 | **RXD** | GPIO 21 | Jalur TX ESP32 (Mengirim perintah AT ke Modem) |
 | **PEN / PWRKEY** | GPIO 23 | Kontrol untuk me-reset / menyalakan modem dari kodingan |
-| **GND** | GND | Ground bersama (Wajib terhubung) |
-| **VTTL / VEXT** | 3V3 (3.3V) | Referensi tegangan logika UART (agar aman untuk ESP32) |
-| **VIN** | Eksternal 5V | Sebaiknya pasang kabel USB langsung ke modem (butuh minim 5V 2A) |
+| **GND** | GND | Ground bersama / Common Ground (Wajib terhubung) |
+| **Port USB Modem / VIN** | **Power Supply Eksternal 5V 2A** | **Daya Utama Modem:** Colok kabel USB langsung ke modem (BUKAN dari ESP32) |
 
 ## 2. Modul GPS Neo-6M
 
