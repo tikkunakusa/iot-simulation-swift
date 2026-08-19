@@ -41,7 +41,11 @@ func main() {
 	modem.readResponse()
 
 	SNTP.initialize()
-	MQTT.start(brokerUri: "tcp://test.mosquitto.org:1883")
+	MQTT.start(
+		brokerUri: "ssl://dfc14af1.ala.asia-southeast1.emqxsl.com:8883",
+		username: "iot_tracker",
+		password: "884fd935-7965-4c19-8d59-973fc5fa11b6"
+	)
 
 	var counter = 0
 	var tickCount = 0

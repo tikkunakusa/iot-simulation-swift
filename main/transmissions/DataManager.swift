@@ -55,7 +55,7 @@ public class DataManager {
 
 			if !MQTT.isConnected {
 				print("[QUEUE ] 🔄 Sinyal terdeteksi (\(modem.signalStrengthRSSI)/31), menghubungkan MQTT...")
-				MQTT.start(brokerUri: "tcp://test.mosquitto.org:1883")
+				MQTT.reconnect()
 			}
 
 			if MQTT.isConnected {

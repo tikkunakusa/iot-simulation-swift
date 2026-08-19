@@ -1,9 +1,27 @@
 public class MQTT {
     public static var isConnected: Bool = false
+    public static var brokerUri: String = "ssl://dfc14af1.ala.asia-southeast1.emqxsl.com:8883"
+    public static var username: String? = "iot_tracker"
+    public static var password: String? = "884fd935-7965-4c19-8d59-973fc5fa11b6"
     
-    public static func start(brokerUri: String) {
+    public static func reconnect() {
+        start(brokerUri: brokerUri, username: username, password: password)
+    }
+    
+    public static func start(brokerUri: String? = nil, username: String? = nil, password: String? = nil) {
         guard let modem = Modem4G.shared else { return }
         
+        if let uri = brokerUri {
+            self.brokerUri = uri
+        }
+        if let u = username {
+            self.username = u
+        }
+        if let p = password {
+            self.password = p
+        }
+        
+        let targetUri = self.brokerUri
         modem_reset_mqtt_connect_status()
         
         print("[MQTT  ] 📡 Inisialisasi APN & Network Context (AT+CGDCONT / AT+CGACT)...")
@@ -34,6 +52,23 @@ public class MQTT {
         delay_ms(100)
         modem.readResponse()
         
+        let isSsl = targetUri.withCString { cStr in
+            return strncmp(cStr, "ssl://", 6) == 0 || strncmp(cStr, "tcps://", 7) == 0 || strstr(cStr, ":8883") != nil
+        }
+        
+        if isSsl {
+            print("[MQTT  ] 🔒 Konfigurasi SSL/TLS Context (TLS 1.2, authmode=0)...")
+            modem.sendCommand("AT+CSSLCFG=\"sslversion\",0,4\r\n")
+            delay_ms(100)
+            modem.readResponse()
+            modem.sendCommand("AT+CSSLCFG=\"authmode\",0,0\r\n")
+            delay_ms(100)
+            modem.readResponse()
+            modem.sendCommand("AT+CSSLCFG=\"ignorelocaltime\",0,1\r\n")
+            delay_ms(100)
+            modem.readResponse()
+        }
+        
         print("[MQTT  ] ⚙️ Memulai service (AT+CMQTTSTART)...")
         modem.sendCommand("AT+CMQTTSTART\r\n")
         for _ in 0..<15 {
@@ -41,22 +76,36 @@ public class MQTT {
             modem.readResponse()
         }
         
-        print("[MQTT  ] 🆔 Register Client ID (AT+CMQTTACCQ)...")
-        modem.sendCommand("AT+CMQTTACCQ=0,\"esp32c6_889875b3\",0\r\n")
+        let serverType = isSsl ? 1 : 0
+        print("[MQTT  ] 🆔 Register Client ID (AT+CMQTTACCQ: server_type=\(serverType))...")
+        modem.sendCommand("AT+CMQTTACCQ=0,\"esp32c6_889875b3\",\(serverType)\r\n")
         for _ in 0..<10 {
             delay_ms(100)
             modem.readResponse()
         }
         
-        let hasTcp = brokerUri.withCString { cStr in
-            return strncmp(cStr, "tcp://", 6) == 0
+        if isSsl {
+            print("[MQTT  ] 🔗 Mengaitkan SSL Context (AT+CMQTTSSLCFG=0,0)...")
+            modem.sendCommand("AT+CMQTTSSLCFG=0,0\r\n")
+            delay_ms(100)
+            modem.readResponse()
         }
-        let formattedUri = hasTcp ? brokerUri : "tcp://\(brokerUri)"
-        print("[MQTT  ] 🔌 Menghubungkan ke broker \(formattedUri)...")
-        modem.sendCommand("AT+CMQTTCONNECT=0,\"\(formattedUri)\",60,1\r\n")
         
-        for _ in 0..<40 {
-            delay_ms(100) // Polling 4 detik untuk menangkap balasan URC (+CMQTTCONNECT: 0,0)
+        let hasPrefix = targetUri.withCString { cStr in
+            return strncmp(cStr, "tcp://", 6) == 0 || strncmp(cStr, "ssl://", 6) == 0 || strncmp(cStr, "tcps://", 7) == 0
+        }
+        let prefix = isSsl ? "ssl://" : "tcp://"
+        let formattedUri = hasPrefix ? targetUri : "\(prefix)\(targetUri)"
+        
+        print("[MQTT  ] 🔌 Menghubungkan ke broker \(formattedUri)...")
+        if let u = self.username, let p = self.password {
+            modem.sendCommand("AT+CMQTTCONNECT=0,\"\(formattedUri)\",60,1,\"\(u)\",\"\(p)\"\r\n")
+        } else {
+            modem.sendCommand("AT+CMQTTCONNECT=0,\"\(formattedUri)\",60,1\r\n")
+        }
+        
+        for _ in 0..<60 {
+            delay_ms(100) // Polling 6 detik untuk menangkap balasan URC (+CMQTTCONNECT: 0,0) handshake SSL
             modem.readResponse()
             if modem_is_mqtt_connected() {
                 break
@@ -67,7 +116,7 @@ public class MQTT {
         if isConnected {
             print("[MQTT  ] ✅ Terhubung ke broker MQTT!")
         } else {
-            print("[MQTT  ] ⚠️ Belum terhubung ke broker MQTT (Menunggu sinyal/jaringan).")
+            print("[MQTT  ] ⚠️ Belum terhubung ke broker MQTT (Menunggu sinyal/jaringan/handshake).")
         }
     }
     
