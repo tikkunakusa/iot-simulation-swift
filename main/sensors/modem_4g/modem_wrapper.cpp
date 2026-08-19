@@ -5,18 +5,16 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include <string.h>
-#include <time.h>
-#include <sys/time.h>
-#include "esp_timer.h"
+#include <stdio.h>
 
 #define MODEM_UART_PORT UART_NUM_1
-#define BUF_SIZE 1024
+#define BUF_SIZE 2048
 
 static const char *TAG = "MODEM_A7670C";
 
-void modem_power_cycle(int pwr_pin) {
+void modem_power_pulse(int pwr_pin, int active_low_ms, int wait_boot_ms) {
     if (pwr_pin >= 0) {
-        ESP_LOGI(TAG, "Toggling PWRKEY (GPIO %d) to boot up modem...", pwr_pin);
+        ESP_LOGI(TAG, "Pulsing PWRKEY (GPIO %d) -> LOW for %d ms...", pwr_pin, active_low_ms);
         
         gpio_config_t io_conf = {};
         io_conf.intr_type = GPIO_INTR_DISABLE;
@@ -29,16 +27,22 @@ void modem_power_cycle(int pwr_pin) {
         gpio_set_level((gpio_num_t)pwr_pin, 1);
         vTaskDelay(pdMS_TO_TICKS(100));
         
-        // Pulsa Active-LOW (0) selama 1.2 detik untuk menyalakan modem
+        // Active-LOW pulse to toggle modem power state
         gpio_set_level((gpio_num_t)pwr_pin, 0); 
-        vTaskDelay(pdMS_TO_TICKS(1200));       
+        vTaskDelay(pdMS_TO_TICKS(active_low_ms));       
         
-        // Kembalikan ke HIGH (1) setelah menyala
+        // Return to HIGH state
         gpio_set_level((gpio_num_t)pwr_pin, 1); 
         
-        ESP_LOGI(TAG, "Waiting 3 seconds for modem to boot...");
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        if (wait_boot_ms > 0) {
+            ESP_LOGI(TAG, "Waiting %d ms for modem...", wait_boot_ms);
+            vTaskDelay(pdMS_TO_TICKS(wait_boot_ms));
+        }
     }
+}
+
+void modem_power_cycle(int pwr_pin) {
+    modem_power_pulse(pwr_pin, 1200, 3000);
 }
 
 void modem_init(int rx_pin, int tx_pin, int pwr_pin, int baud_rate) {
@@ -54,159 +58,48 @@ void modem_init(int rx_pin, int tx_pin, int pwr_pin, int baud_rate) {
     ESP_ERROR_CHECK(uart_set_pin(MODEM_UART_PORT, tx_pin, rx_pin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
     ESP_ERROR_CHECK(uart_driver_install(MODEM_UART_PORT, BUF_SIZE * 2, 0, 0, NULL, 0));
     
-    ESP_LOGI(TAG, "Modem UART initialized on TX: %d, RX: %d", tx_pin, rx_pin);
+    ESP_LOGI(TAG, "Modem UART initialized on TX: %d, RX: %d @ %d bps", tx_pin, rx_pin, baud_rate);
 
-    // Cek apakah modem sudah menyala (kirim tes AT)
-    uint8_t dummy[128];
-    uart_write_bytes(MODEM_UART_PORT, "AT\r\n", 4);
-    int len = uart_read_bytes(MODEM_UART_PORT, dummy, sizeof(dummy) - 1, pdMS_TO_TICKS(500));
-    if (len > 0 && strstr((char*)dummy, "OK")) {
-        ESP_LOGI(TAG, "Modem sudah DALAM KONDISI NYALA. Melewati PWRKEY toggle.");
-    } else {
-        modem_power_cycle(pwr_pin);
+    if (pwr_pin >= 0) {
+        gpio_config_t io_conf = {};
+        io_conf.intr_type = GPIO_INTR_DISABLE;
+        io_conf.mode = GPIO_MODE_OUTPUT;
+        io_conf.pin_bit_mask = (1ULL << pwr_pin);
+        io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+        io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+        gpio_config(&io_conf);
+        gpio_set_level((gpio_num_t)pwr_pin, 1);
     }
-    
-    // Kunci Autobauding SIMCom A7670C ke 115200 Hz
-    for (int i = 0; i < 5; i++) {
-        uart_write_bytes(MODEM_UART_PORT, "AT\r\n", 4);
-        vTaskDelay(pdMS_TO_TICKS(100));
-    }
-    uart_flush(MODEM_UART_PORT);
-    uart_write_bytes(MODEM_UART_PORT, "AT+IPR=115200\r\n", 15);
-    vTaskDelay(pdMS_TO_TICKS(200));
-    uart_flush(MODEM_UART_PORT);
 }
 
 void modem_send_command(const char* cmd) {
+    if (!cmd) return;
     uart_write_bytes(MODEM_UART_PORT, cmd, strlen(cmd));
     uart_wait_tx_done(MODEM_UART_PORT, pdMS_TO_TICKS(500));
 }
 
 int modem_read_data(uint8_t* buffer, int buffer_size) {
-    int len = uart_read_bytes(MODEM_UART_PORT, buffer, buffer_size - 1, pdMS_TO_TICKS(200));
+    return modem_read_data_timeout(buffer, buffer_size, 200);
+}
+
+int modem_read_data_timeout(uint8_t* buffer, int buffer_size, int timeout_ms) {
+    if (!buffer || buffer_size <= 0) return 0;
+    int len = uart_read_bytes(MODEM_UART_PORT, buffer, buffer_size - 1, pdMS_TO_TICKS(timeout_ms));
     if (len > 0) {
-        buffer[len] = '\0'; 
+        buffer[len] = '\0';
+    } else {
+        buffer[0] = '\0';
+        len = 0;
     }
     return len;
 }
 
-extern "C" void format_double_to_string(double val, char* buffer, int max_len) {
-    snprintf(buffer, max_len, "%.6f", val);
-}
-
-extern "C" void format_float_to_string(float val, char* buffer, int max_len) {
-    snprintf(buffer, max_len, "%.2f", val);
-}
-
-static int64_t g_base_epoch = 1770876300LL; // Fallback epoch timestamp (August 2026)
-
-extern "C" int64_t get_epoch_timestamp(void) {
-    time_t now;
-    time(&now);
-    if (now > 1700000000LL) {
-        return (int64_t)now;
-    }
-    int64_t uptime_sec = esp_timer_get_time() / 1000000LL;
-    return g_base_epoch + uptime_sec;
-}
-
-extern "C" void set_epoch_timestamp(int64_t epoch_sec) {
-    struct timeval tv;
-    tv.tv_sec = (time_t)epoch_sec;
-    tv.tv_usec = 0;
-    settimeofday(&tv, NULL);
-}
-
-extern "C" void parse_modem_time_if_present(const char* str) {
-    if (!str) return;
-    const char* p = strstr(str, "+CCLK: \"");
-    if (p) {
-        int year, month, day, hour, min, sec;
-        if (sscanf(p + 8, "%d/%d/%d,%d:%d:%d", &year, &month, &day, &hour, &min, &sec) == 6) {
-            struct tm tm_info;
-            memset(&tm_info, 0, sizeof(tm_info));
-            tm_info.tm_year = (year < 100 ? year + 100 : year - 1900);
-            tm_info.tm_mon = month - 1;
-            tm_info.tm_mday = day;
-            tm_info.tm_hour = hour;
-            tm_info.tm_min = min;
-            tm_info.tm_sec = sec;
-            time_t t = mktime(&tm_info);
-            if (t > 1700000000LL) {
-                set_epoch_timestamp((int64_t)t);
-                ESP_LOGI(TAG, "System time synced from modem AT+CCLK: %lld", (long long)t);
-            }
-        }
-    }
-}
-
-static bool g_modem_gnss_fix = false;
-static double g_modem_lat = 0.0;
-static double g_modem_lng = 0.0;
-
-extern "C" bool modem_gnss_has_fix(void) {
-    return g_modem_gnss_fix;
-}
-
-extern "C" double modem_gnss_get_latitude(void) {
-    return g_modem_lat;
-}
-
-extern "C" double modem_gnss_get_longitude(void) {
-    return g_modem_lng;
-}
-
-extern "C" void parse_modem_gnss_if_present(const char* str) {
-    if (!str) return;
-
-    // Check for +CGNSSINFO:
-    const char* p = strstr(str, "+CGNSSINFO:");
-    if (p) {
-        p += 11;
-        while (*p == ' ') p++;
-        
-        int mode = 0, gps_sats = 0, glonass_sats = 0, beidou_sats = 0;
-        double lat_val = 0.0, lng_val = 0.0;
-        char ns = 'N', ew = 'E';
-        
-        if (sscanf(p, "%d,%d,%d,%d,%lf,%c,%lf,%c", &mode, &gps_sats, &glonass_sats, &beidou_sats, &lat_val, &ns, &lng_val, &ew) >= 7) {
-            if (ns == 'S' || ns == 's') {
-                if (lat_val > 0) lat_val = -lat_val;
-            }
-            if (ew == 'W' || ew == 'w') {
-                if (lng_val > 0) lng_val = -lng_val;
-            }
-            g_modem_lat = lat_val;
-            g_modem_lng = lng_val;
-            g_modem_gnss_fix = true;
-            printf("[MODEM-GPS] 🛰️ Latitude: %.6f, Longitude: %.6f (Sats: %d)\n", g_modem_lat, g_modem_lng, gps_sats + glonass_sats + beidou_sats);
-            return;
-        } else {
-            g_modem_gnss_fix = false;
-            printf("[MODEM-GPS] ⚠️ Mencari sinyal GNSS via modem (waiting for fix)...\n");
-        }
-    }
-
-    // Check for +CLBS:
-    const char* clbs = strstr(str, "+CLBS:");
-    if (clbs) {
-        clbs += 6;
-        while (*clbs == ' ') clbs++;
-        int err = -1, accuracy = 0;
-        double lat_val = 0.0, lng_val = 0.0;
-        if (sscanf(clbs, "%d,%lf,%lf,%d", &err, &lat_val, &lng_val, &accuracy) >= 3 && err == 0) {
-            g_modem_lat = lat_val;
-            g_modem_lng = lng_val;
-            g_modem_gnss_fix = true;
-            printf("[MODEM-LBS] 📡 BTS Cell Location -> Latitude: %.6f, Longitude: %.6f (Acc: %dm)\n", g_modem_lat, g_modem_lng, accuracy);
-        }
-    }
+void modem_flush_rx(void) {
+    uart_flush_input(MODEM_UART_PORT);
 }
 
 static int g_modem_rssi = 99;
 static int g_modem_ber = 99;
-static bool g_mqtt_connected = false;
-static bool g_mqtt_pub_success = false;
 
 extern "C" void parse_modem_csq_if_present(const char* str) {
     if (!str) return;
@@ -218,49 +111,7 @@ extern "C" void parse_modem_csq_if_present(const char* str) {
         if (sscanf(p, "%d,%d", &rssi, &ber) >= 1) {
             g_modem_rssi = rssi;
             g_modem_ber = ber;
-            modem_print_signal_status();
         }
-    }
-}
-
-extern "C" void parse_modem_mqtt_if_present(const char* str) {
-    if (!str) return;
-    
-    // Parse +CMQTTCONNECT: <client_idx>,<err_code>
-    const char* conn = strstr(str, "+CMQTTCONNECT:");
-    if (conn) {
-        conn += 14;
-        while (*conn == ' ') conn++;
-        int client_idx = 0, err_code = -1;
-        if (sscanf(conn, "%d,%d", &client_idx, &err_code) >= 2) {
-            if (err_code == 0) {
-                g_mqtt_connected = true;
-            } else {
-                g_mqtt_connected = false;
-            }
-        }
-    }
-    
-    // Parse +CMQTTPUB: <client_idx>,<err_code>
-    const char* pub = strstr(str, "+CMQTTPUB:");
-    if (pub) {
-        pub += 10;
-        while (*pub == ' ') pub++;
-        int client_idx = 0, err_code = -1;
-        if (sscanf(pub, "%d,%d", &client_idx, &err_code) >= 2) {
-            if (err_code == 0) {
-                g_mqtt_pub_success = true;
-            } else {
-                g_mqtt_pub_success = false;
-            }
-        }
-    }
-    
-    // Parse disconnect notifications or ERROR
-    if (strstr(str, "+CMQTTDISC:") != NULL || 
-        strstr(str, "+CMQTTCONNLOST:") != NULL || 
-        strstr(str, "+CMQTTNONET") != NULL) {
-        g_mqtt_connected = false;
     }
 }
 
@@ -276,22 +127,6 @@ extern "C" bool modem_has_signal(void) {
     return (g_modem_rssi > 0 && g_modem_rssi < 99);
 }
 
-extern "C" bool modem_is_mqtt_connected(void) {
-    return g_mqtt_connected;
-}
-
-extern "C" bool modem_is_mqtt_pub_success(void) {
-    return g_mqtt_pub_success;
-}
-
-extern "C" void modem_reset_mqtt_pub_status(void) {
-    g_mqtt_pub_success = false;
-}
-
-extern "C" void modem_reset_mqtt_connect_status(void) {
-    g_mqtt_connected = false;
-}
-
 extern "C" int modem_get_signal_dbm(void) {
     if (g_modem_rssi < 0 || g_modem_rssi > 31) {
         return -999;
@@ -301,7 +136,7 @@ extern "C" int modem_get_signal_dbm(void) {
 
 extern "C" void modem_print_signal_status(void) {
     if (g_modem_rssi == 99 || g_modem_rssi < 0) {
-        printf("[MODEM ] 📶 Signal Strength: ⚠️ Tidak Ada Sinyal / Unknown (CSQ: 99)\n");
+        printf("[MODEM ] 📶 Sinyal: ⚠️ Tidak Ada Sinyal / Unknown (CSQ: 99)\n");
         return;
     }
     
@@ -326,9 +161,52 @@ extern "C" void modem_print_signal_status(void) {
         bar = "[░░░░]";
     }
     
-    printf("[MODEM ] 📶 Signal Strength: %s (%d dBm | CSQ: %d/31 | %s)\n", 
+    printf("[MODEM ] 📶 Sinyal: %s (%d dBm | CSQ: %d/31 | %s)\n", 
            quality, dbm, g_modem_rssi, bar);
 }
+
+extern "C" bool modem_set_baudrate(int baud_rate) {
+    esp_err_t err = uart_set_baudrate(MODEM_UART_PORT, baud_rate);
+    return (err == ESP_OK);
+}
+
+extern "C" void modem_reconfigure_pins(int rx_pin, int tx_pin) {
+    uart_set_pin(MODEM_UART_PORT, tx_pin, rx_pin, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+}
+
+extern "C" void modem_print_raw_hex(const uint8_t* buffer, int len) {
+    if (!buffer || len <= 0) return;
+    printf("[RAW HEX (%d bytes)]: ", len);
+    for (int i = 0; i < len; i++) {
+        printf("%02X ", buffer[i]);
+    }
+    printf("\n");
+}
+
+extern "C" bool modem_resp_contains(const char* haystack, const char* needle) {
+    if (!haystack || !needle) return false;
+    return strstr(haystack, needle) != NULL;
+}
+
+extern "C" void modem_print_sanitized(const char* label, const char* str) {
+    if (!str) return;
+    if (label && strlen(label) > 0) {
+        printf("%s: ", label);
+    }
+    for (int i = 0; str[i] != '\0'; i++) {
+        char c = str[i];
+        if ((unsigned char)c < 32 && c != '\n' && c != '\r' && c != '\t') {
+            putchar(' ');
+        } else if ((unsigned char)c > 126) {
+            putchar('?');
+        } else {
+            putchar(c);
+        }
+    }
+    printf("\n");
+}
+
+
 
 // Embedded Swift Unicode Stubs to satisfy linker when standard library tables are omitted
 extern "C" {
@@ -342,5 +220,6 @@ extern "C" {
     uint16_t _swift_stdlib_getDecompositionEntry(uint32_t scalar) { return 0; }
     const uint8_t _swift_stdlib_nfd_decompositions[1] = {0};
 }
+
 
 
