@@ -3,3 +3,4 @@ dependencies:
     version: '*'
   esp-idf-lib/dht: '*'
   cinderblocks/esp_tinygpsplusplus: ^1.1.1
+  espressif/mqtt: '*'
